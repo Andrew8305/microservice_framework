@@ -9,7 +9,7 @@ import javax.json.JsonValue;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 /**
- * Helper functions for the inclusion-aware seriaizer.
+ * Helper functions for the inclusion-aware serializer.
  */
 public final class JsonIncludes {
 
@@ -17,7 +17,7 @@ public final class JsonIncludes {
     }
 
     public static boolean includeField(final JsonValue jsonValue, final Include include) {
-        switch(include) {
+        switch (include) {
             case NON_NULL:
             case NON_ABSENT:
                 return !NULL.equals(jsonValue);
@@ -32,7 +32,7 @@ public final class JsonIncludes {
     }
 
     private static boolean isJsonValueEmpty(final JsonValue value) {
-        switch(value.getValueType()) {
+        switch (value.getValueType()) {
             case ARRAY:
                 return ((JsonArray) value).isEmpty();
             case STRING:

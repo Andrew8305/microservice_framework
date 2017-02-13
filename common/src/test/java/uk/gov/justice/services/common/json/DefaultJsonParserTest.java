@@ -15,26 +15,26 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class JsonParserTest {
+public class DefaultJsonParserTest {
 
     @InjectMocks
-    private JsonParser jsonParser;
+    private DefaultJsonParser defaultJsonParser;
 
     @Test
     public void shouldConvertFromAJsonStringToAPojo() throws Exception {
 
         final JsonPojo jsonPojo = new JsonPojo("the-name", true, 23);
 
-        final String json = jsonParser.fromObject(jsonPojo);
+        final String json = defaultJsonParser.fromObject(jsonPojo);
 
-        assertThat(jsonParser.toObject(json, JsonPojo.class), is(jsonPojo));
+        assertThat(defaultJsonParser.toObject(json, JsonPojo.class), is(jsonPojo));
     }
 
     @Test
     public void shouldThrowARuntimeExceptionIfTheObjectCannotBeParsedIntoJson() throws Exception {
 
         try {
-            final String s = jsonParser.fromObject(new Object());
+            final String s = defaultJsonParser.fromObject(new Object());
             fail();
         } catch (RuntimeException expected) {
             assertThat(expected.getCause(), is(instanceOf(IOException.class)));
@@ -46,11 +46,11 @@ public class JsonParserTest {
     public void shouldThrowARuntimeExceptionIfTheJsonCannotBeParsedIntoAnObject() throws Exception {
 
         try {
-            jsonParser.toObject("You shall not parse!!!", JsonPojo.class);
+            defaultJsonParser.toObject("You shall not parse!!!", JsonPojo.class);
             fail();
         } catch (RuntimeException expected) {
             assertThat(expected.getCause(), is(instanceOf(IOException.class)));
-            assertThat(expected.getMessage(), is("Failed to convert json 'You shall not parse!!!' to uk.gov.justice.services.common.json.JsonParserTest$JsonPojo"));
+            assertThat(expected.getMessage(), is("Failed to convert json 'You shall not parse!!!' to uk.gov.justice.services.common.json.DefaultJsonParserTest$JsonPojo"));
         }
     }
 

@@ -1,7 +1,6 @@
 package uk.gov.justice.services.common.configuration;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static uk.gov.justice.services.common.configuration.CommonValueAnnotationDef.NULL_DEFAULT;
 
 import java.lang.annotation.Retention;
 
@@ -10,7 +9,9 @@ import javax.inject.Qualifier;
 
 @Qualifier
 @Retention(RUNTIME)
-public @interface GlobalValue {
+public @interface Value {
+
+    String NULL_DEFAULT = "_null_default";
 
     /**
      * Bundle key

@@ -72,11 +72,10 @@ public class GlobalValueProducerTest {
         when(initialContext.lookup("java:global/unknownProperty")).thenThrow(NameNotFoundException.class);
         when(annotation.key()).thenReturn("unknownProperty");
 
-        when(annotation.defaultValue()).thenReturn(CommonValueAnnotationDef.NULL_DEFAULT);
+        when(annotation.defaultValue()).thenReturn(GlobalValue.NULL_DEFAULT);
 
         valueProducer.stringValueOf(propertyInjectionPoint);
     }
-
 
 
 }

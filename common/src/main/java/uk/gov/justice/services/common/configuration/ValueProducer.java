@@ -1,7 +1,7 @@
 package uk.gov.justice.services.common.configuration;
 
 import static java.lang.String.format;
-import static uk.gov.justice.services.common.configuration.CommonValueAnnotationDef.localValueAnnotationOf;
+import static uk.gov.justice.services.common.configuration.CommonValueAnnotationDefault.localValueAnnotationOf;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
@@ -11,7 +11,8 @@ import javax.naming.NamingException;
 
 
 /**
- * Looks up context specific jndi names in order to inject their values into @Value annotated properties.
+ * Looks up context specific jndi names in order to inject their values into @Value annotated
+ * properties.
  */
 @ApplicationScoped
 public class ValueProducer extends AbstractValueProducer {
@@ -36,7 +37,7 @@ public class ValueProducer extends AbstractValueProducer {
     }
 
     @Override
-    protected String jndiNameFrom(final CommonValueAnnotationDef annotation) {
+    protected String jndiNameFrom(final CommonValueAnnotationDefault annotation) {
         return format("java:/app/%s/%s", serviceContextNameProvider.getServiceContextName(), annotation.key());
     }
 

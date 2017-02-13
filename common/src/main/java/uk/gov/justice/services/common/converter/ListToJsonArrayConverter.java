@@ -17,9 +17,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Converts a List of Type &lt;T&gt; to JsonArray
  *
- * @param T the type of objects in the List
+ * @param <T> the type of objects in the List
  */
 public class ListToJsonArrayConverter<T> implements Converter<List<T>, JsonArray> {
+
     @Inject
     ObjectMapper mapper;
 
@@ -28,16 +29,19 @@ public class ListToJsonArrayConverter<T> implements Converter<List<T>, JsonArray
 
     public JsonArray convert(final List<T> sourceList) {
         final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
+
         if (sourceList == null) {
-            throw new ConverterException(format("Failed to convert %s to JsonArray", sourceList));
+            throw new ConverterException("Failed to convert Null List to JsonArray");
         }
-        sourceList.forEach((object) -> {
+
+        sourceList.forEach(object -> {
             try {
                 jsonArrayBuilder.add(stringToJsonObjectConverter.convert(mapper.writeValueAsString(object)));
             } catch (IOException e) {
                 throw new ConverterException(format("Error while converting list item %s to JsonValue", object), e);
             }
         });
+
         return jsonArrayBuilder.build();
     }
 

@@ -1,15 +1,15 @@
 package uk.gov.justice.services.common.converter;
 
+import static java.lang.String.format;
+import static net.trajano.commons.testing.UtilityClassTestUtil.assertUtilityClassWellDefined;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import java.time.LocalDate;
+
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Test;
-
-import java.time.LocalDate;
-
-import static java.lang.String.format;
-import static net.trajano.commons.testing.UtilityClassTestUtil.assertUtilityClassWellDefined;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Unit tests for the {@link LocalDates} utility class.

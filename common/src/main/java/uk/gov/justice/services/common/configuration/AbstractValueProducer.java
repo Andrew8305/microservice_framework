@@ -13,16 +13,16 @@ abstract class AbstractValueProducer {
         initialContext = new InitialContext();
     }
 
-    protected String jndiValueFor(final CommonValueAnnotationDef annotation) throws NamingException {
+    protected String jndiValueFor(final CommonValueAnnotationDefault annotation) throws NamingException {
         try {
             return (String) initialContext.lookup(jndiNameFrom(annotation));
         } catch (NameNotFoundException e) {
-            if (CommonValueAnnotationDef.NULL_DEFAULT.equals(annotation.defaultValue())) {
+            if (Value.NULL_DEFAULT.equals(annotation.defaultValue())) {
                 throw new MissingPropertyException(format("Missing property: %s", annotation.key()));
             }
             return annotation.defaultValue();
         }
     }
 
-    protected abstract String jndiNameFrom(CommonValueAnnotationDef annotation);
+    protected abstract String jndiNameFrom(CommonValueAnnotationDefault annotation);
 }
