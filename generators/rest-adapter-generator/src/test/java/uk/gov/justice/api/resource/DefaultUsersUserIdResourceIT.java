@@ -31,8 +31,8 @@ import uk.gov.justice.services.core.cdi.LoggerProducer;
 import uk.gov.justice.services.core.json.DefaultJsonSchemaValidator;
 import uk.gov.justice.services.core.json.JsonSchemaLoader;
 import uk.gov.justice.services.generators.test.utils.interceptor.RecordingInterceptorChainProcessor;
+import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjectEnvelopeConverter;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -121,7 +121,7 @@ public class DefaultUsersUserIdResourceIT {
             RestEnvelopeBuilderFactory.class,
             RecordingInterceptorChainProcessor.class,
             ObjectMapperProducer.class,
-            JsonObjectEnvelopeConverter.class,
+            DefaultJsonObjectEnvelopeConverter.class,
             CommonProviders.class,
             DummyCommonProviders.class,
             BadRequestExceptionMapper.class,

@@ -3,8 +3,8 @@ package uk.gov.justice.services.test.utils.core.messaging;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataFrom;
 
 import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
+import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.JsonObjectMetadata;
 import uk.gov.justice.services.messaging.Metadata;
 
@@ -101,7 +101,7 @@ public class JsonEnvelopeBuilder {
     }
 
     public String toJsonString() {
-        return new JsonObjectEnvelopeConverter().fromEnvelope(build()).toString();
+        return new DefaultJsonObjectEnvelopeConverter().fromEnvelope(build()).toString();
     }
 }
 
