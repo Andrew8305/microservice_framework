@@ -1,8 +1,5 @@
 package uk.gov.justice.services.common.converter;
 
-import static com.google.common.io.Resources.getResource;
-import static java.lang.String.format;
-import static java.nio.charset.Charset.defaultCharset;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.isA;
@@ -12,18 +9,20 @@ import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 
-import java.io.IOException;
 import java.util.Objects;
 
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
 
 public class ObjectMapperProducerTest {
+
+    private static final String JSON_OBJECT_STRING = "{\n" +
+            "  \"id\": \"861c9430-7bc6-4bf0-b549-6534394b8d65\"\n" +
+            "}";
 
     private ObjectMapper mapper;
 
@@ -52,7 +51,7 @@ public class ObjectMapperProducerTest {
 
         final String json = mapper.writeValueAsString(source);
 
-        assertEquals(jsonFromFile("test-with-one-field"), json, true);
+        assertEquals(JSON_OBJECT_STRING, json, true);
     }
 
     @Test
@@ -64,7 +63,7 @@ public class ObjectMapperProducerTest {
 
         final String json = mapper.writeValueAsString(source);
 
-        assertEquals(jsonFromFile("test-with-one-field"), json, true);
+        assertEquals(JSON_OBJECT_STRING, json, true);
     }
 
     @Test
@@ -76,10 +75,6 @@ public class ObjectMapperProducerTest {
 
         assertThat(mapper.readValue(json, DummyBeanWithSingleArgConstructor.class), is(bean));
 
-    }
-
-    private String jsonFromFile(final String name) throws IOException {
-        return Resources.toString(getResource(format("json/%s.json", name)), defaultCharset());
     }
 
     public static class DummyBeanWithSingleArgConstructor {

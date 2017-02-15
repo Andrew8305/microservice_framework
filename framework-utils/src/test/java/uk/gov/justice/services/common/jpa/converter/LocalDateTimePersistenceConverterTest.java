@@ -14,9 +14,9 @@ import org.junit.Test;
 
 public class LocalDateTimePersistenceConverterTest {
 
-    public static final int HOUR = 11;
-    public static final int MINUTE = 59;
-    public static final int SECOND = 58;
+    private static final int HOUR = 11;
+    private static final int MINUTE = 59;
+    private static final int SECOND = 58;
     private static final int DAY = 25;
     private static final Month MONTH = Month.DECEMBER;
     private static final int YEAR = 2016;

@@ -1,6 +1,6 @@
 package uk.gov.justice.services.common.configuration;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
@@ -22,7 +22,8 @@ public class JndiBasedServiceContextNameProviderTest {
 
     @Test
     public void shouldReturnContextNameFromConstructor() {
-        jndiBasedServiceContextNameProvider = new JndiBasedServiceContextNameProvider(APP_NAME);
+        jndiBasedServiceContextNameProvider = new JndiBasedServiceContextNameProvider();
+        jndiBasedServiceContextNameProvider.appName = APP_NAME;
 
         final String serviceContextName = jndiBasedServiceContextNameProvider.getServiceContextName();
 
