@@ -26,7 +26,7 @@ public class ExceptionThrowingInterceptorTest {
     public void shouldThrowExceptionWhenNameContainsExceptionalCake() throws Exception {
 
         interceptor.process(interceptorContextWithInput(
-                envelope().with(metadataWithDefaults()).withPayloadOf("Exceptional cake", "name").build(), null), interceptorChain);
+                envelope().with(metadataWithDefaults()).withPayloadOf("Exceptional cake", "name").build()), interceptorChain);
 
     }
 
@@ -34,10 +34,10 @@ public class ExceptionThrowingInterceptorTest {
     public void shouldNotThrowExceptionPayloadDoesNotContainExceptionalCake() {
 
         interceptor.process(interceptorContextWithInput(
-                envelope().with(metadataWithDefaults()).withPayloadOf("Some cake", "name").build(), null), interceptorChain);
+                envelope().with(metadataWithDefaults()).withPayloadOf("Some cake", "name").build()), interceptorChain);
 
         interceptor.process(interceptorContextWithInput(
-                envelope().with(metadataWithDefaults()).build(), null), interceptorChain);
+                envelope().with(metadataWithDefaults()).build()), interceptorChain);
 
     }
 }

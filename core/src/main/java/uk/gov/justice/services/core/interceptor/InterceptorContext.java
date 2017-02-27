@@ -14,7 +14,6 @@ public class InterceptorContext {
 
     private final ContextPayload input;
     private final ContextPayload output;
-    private final InjectionPoint injectionPoint;
 
     /**
      * Construct an InterceptorContext that contains an input {@link ContextPayload}, an output
@@ -22,12 +21,10 @@ public class InterceptorContext {
      *
      * @param input          the input ContextPayload
      * @param output         the output ContextPayload
-     * @param injectionPoint the injection point of the interceptor chain process
      */
-    private InterceptorContext(final ContextPayload input, final ContextPayload output, final InjectionPoint injectionPoint) {
+    private InterceptorContext(final ContextPayload input, final ContextPayload output) {
         this.input = input;
         this.output = output;
-        this.injectionPoint = injectionPoint;
     }
 
     /**
@@ -35,11 +32,10 @@ public class InterceptorContext {
      * envelope, an output {@link ContextPayload} with no envelope and an injection point.
      *
      * @param input          the input JsonEnvelope
-     * @param injectionPoint the injection point of the interceptor chain process
      * @return the new InterceptorContext
      */
-    public static InterceptorContext interceptorContextWithInput(final JsonEnvelope input, final InjectionPoint injectionPoint) {
-        return new InterceptorContext(contextPayloadWith(input), contextPayloadWithNoEnvelope(), injectionPoint);
+    public static InterceptorContext interceptorContextWithInput(final JsonEnvelope input) {
+        return new InterceptorContext(contextPayloadWith(input), contextPayloadWithNoEnvelope());
     }
 
     /**
@@ -53,8 +49,7 @@ public class InterceptorContext {
     public static InterceptorContext copyWithInput(final InterceptorContext interceptorContext, final JsonEnvelope inputEnvelope) {
         return new InterceptorContext(
                 copyWithEnvelope(interceptorContext.inputContext(), inputEnvelope),
-                interceptorContext.outputContext(),
-                interceptorContext.injectionPoint());
+                interceptorContext.outputContext());
     }
 
     /**
@@ -68,8 +63,7 @@ public class InterceptorContext {
     public static InterceptorContext copyWithOutput(final InterceptorContext interceptorContext, final JsonEnvelope outputEnvelope) {
         return new InterceptorContext(
                 interceptorContext.inputContext(),
-                copyWithEnvelope(interceptorContext.outputContext(), outputEnvelope),
-                interceptorContext.injectionPoint());
+                copyWithEnvelope(interceptorContext.outputContext(), outputEnvelope));
     }
 
     public JsonEnvelope inputEnvelope() {
@@ -94,10 +88,6 @@ public class InterceptorContext {
 
     public void setOutputParameter(final String name, final Object parameter) {
         output.setParameter(name, parameter);
-    }
-
-    public InjectionPoint injectionPoint() {
-        return injectionPoint;
     }
 
     private ContextPayload inputContext() {

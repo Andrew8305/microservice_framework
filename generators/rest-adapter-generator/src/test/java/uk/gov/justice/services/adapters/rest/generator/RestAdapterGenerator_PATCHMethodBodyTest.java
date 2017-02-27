@@ -8,6 +8,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.raml.model.ActionType.PATCH;
+import static uk.gov.justice.services.core.interceptor.InterceptorContext.interceptorContextWithInput;
 import static uk.gov.justice.services.generators.test.utils.builder.HttpActionBuilder.httpAction;
 import static uk.gov.justice.services.generators.test.utils.builder.RamlBuilder.restRamlWithDefaults;
 import static uk.gov.justice.services.generators.test.utils.builder.ResourceBuilder.resource;
@@ -15,6 +16,7 @@ import static uk.gov.justice.services.generators.test.utils.config.GeneratorConf
 import static uk.gov.justice.services.generators.test.utils.reflection.ReflectionUtil.firstMethodOf;
 import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelope;
 
+import uk.gov.justice.services.core.interceptor.InterceptorContext;
 import uk.gov.justice.services.adapter.rest.processor.response.ResponseStrategy;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
@@ -82,8 +84,9 @@ public class RestAdapterGenerator_PATCHMethodBodyTest extends BaseRestAdapterGen
                 any(Collection.class));
 
         final JsonEnvelope envelope = envelope().build();
-        functionCaptor.getValue().apply(envelope);
+        final InterceptorContext interceptorContext = interceptorContextWithInput(envelope);
+        functionCaptor.getValue().apply(interceptorContext);
 
-        verify(interceptorChainProcessor).process(envelope);
+        verify(interceptorChainProcessor).process(interceptorContext);
     }
 }

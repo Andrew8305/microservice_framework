@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import static uk.gov.justice.services.core.interceptor.InterceptorContext.interceptorContextWithInput;
 import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelope;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 
@@ -38,6 +39,7 @@ import uk.gov.justice.services.core.extension.BeanInstantiater;
 import uk.gov.justice.services.core.interceptor.InterceptorCache;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessorProducer;
+import uk.gov.justice.services.core.interceptor.InterceptorContext;
 import uk.gov.justice.services.core.interceptor.InterceptorObserver;
 import uk.gov.justice.services.core.jms.DefaultJmsDestinations;
 import uk.gov.justice.services.core.jms.JmsSenderFactory;
@@ -138,11 +140,12 @@ public class MetricsIT {
     @Test
     public void shouldExposeTotalComponentMetrics() throws Exception {
 
-        interceptorChainProcessor.process(envelope()
-                .with(metadataWithRandomUUID(EVENT_ABC)).build());
+        final JsonEnvelope jsonEnvelope = envelope()
+                .with(metadataWithRandomUUID(EVENT_ABC))
+                .build();
 
-        interceptorChainProcessor.process(envelope()
-                .with(metadataWithRandomUUID(EVENT_ABC)).build());
+        interceptorChainProcessor.process(interceptorContextWithInput(jsonEnvelope));
+        interceptorChainProcessor.process(interceptorContextWithInput(jsonEnvelope));
 
         final ObjectName metricsObjectName = new ObjectName("uk.gov.justice.metrics:name=test-component.action.total");
 
@@ -160,14 +163,17 @@ public class MetricsIT {
 
     @Test
     public void shouldExposeMetricsPerMessageName() throws Exception {
-        interceptorChainProcessor.process(envelope()
-                .with(metadataWithRandomUUID(EVENT_ABC)).build());
 
-        interceptorChainProcessor.process(envelope()
-                .with(metadataWithRandomUUID(EVENT_BCD)).build());
+        final JsonEnvelope jsonEnvelope_1 = envelope()
+                .with(metadataWithRandomUUID(EVENT_ABC))
+                .build();
+        final JsonEnvelope jsonEnvelope_2 = envelope()
+                .with(metadataWithRandomUUID(EVENT_BCD))
+                .build();
 
-        interceptorChainProcessor.process(envelope()
-                .with(metadataWithRandomUUID(EVENT_ABC)).build());
+        interceptorChainProcessor.process(interceptorContextWithInput(jsonEnvelope_1));
+        interceptorChainProcessor.process(interceptorContextWithInput(jsonEnvelope_2));
+        interceptorChainProcessor.process(interceptorContextWithInput(jsonEnvelope_1));
 
         final ObjectName metricsAbcObjectName = new ObjectName("uk.gov.justice.metrics:name=test-component.action.event-abc");
         final ObjectName metricsBcdObjectName = new ObjectName("uk.gov.justice.metrics:name=test-component.action.event-bcd");
