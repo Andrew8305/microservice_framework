@@ -34,7 +34,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AccessControlInterceptorTest {
+public class LocalAccessControlInterceptorTest {
 
     private static final int ACCESS_CONTROL_PRIORITY = 6000;
 
@@ -51,27 +51,23 @@ public class AccessControlInterceptorTest {
     private AccessControlFailureMessageGenerator accessControlFailureMessageGenerator;
 
     @InjectMocks
-    private AccessControlInterceptor accessControlInterceptor;
+    private LocalAccessControlInterceptor localAccessControlInterceptor;
 
     private InterceptorChain interceptorChain;
-    private InjectionPoint adaptorCommandLocal;
-    private InjectionPoint adaptorCommandRemote;
 
     @Before
     public void setup() throws Exception {
         final Deque<Interceptor> interceptors = new LinkedList<>();
-        interceptors.add(accessControlInterceptor);
+        interceptors.add(localAccessControlInterceptor);
 
         final Target target = context -> context;
 
         interceptorChain = new InterceptorChain(interceptors, target);
-        adaptorCommandLocal = injectionPointWithMemberAsFirstMethodOf(TestCommandLocal.class);
-        adaptorCommandRemote = injectionPointWithMemberAsFirstMethodOf(TestCommandRemote.class);
     }
 
     @Test
     public void shouldApplyAccessControlToInputIfLocalComponent() throws Exception {
-        final InterceptorContext inputContext = interceptorContextWithInput(envelope, adaptorCommandLocal);
+        final InterceptorContext inputContext = interceptorContextWithInput(envelope);
         when(accessControlService.checkAccessControl(envelope)).thenReturn(Optional.empty());
 
         interceptorChain.processNext(inputContext);
@@ -79,21 +75,13 @@ public class AccessControlInterceptorTest {
     }
 
     @Test
-    public void shouldNotApplyAccessControlToInputIfRemoteComponent() throws Exception {
-        final InterceptorContext inputContext = interceptorContextWithInput(envelope, adaptorCommandRemote);
-
-        interceptorChain.processNext(inputContext);
-        verifyZeroInteractions(accessControlService);
-    }
-
-    @Test
     public void shouldReturnAccessControlPriority() throws Exception {
-        assertThat(accessControlInterceptor.priority(), is(ACCESS_CONTROL_PRIORITY));
+        assertThat(localAccessControlInterceptor.priority(), is(ACCESS_CONTROL_PRIORITY));
     }
 
     @Test
     public void shouldThrowAccessControlViolationExceptionIfAccessControlFailsForInput() throws Exception {
-        final InterceptorContext inputContext = interceptorContextWithInput(envelope, adaptorCommandLocal);
+        final InterceptorContext inputContext = interceptorContextWithInput(envelope);
         final AccessControlViolation accessControlViolation = new AccessControlViolation("reason");
 
         when(accessControlService.checkAccessControl(envelope)).thenReturn(Optional.of(accessControlViolation));

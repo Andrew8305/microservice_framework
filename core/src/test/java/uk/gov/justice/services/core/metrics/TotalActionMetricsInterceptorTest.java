@@ -47,7 +47,7 @@ public class TotalActionMetricsInterceptorTest {
         when(metricsRegistry.timer("someCtxNameABC.action.total")).thenReturn(timer);
         when(timer.time()).thenReturn(timerContext);
 
-        interceptor.process(interceptorContextWithInput(null, null), interceptorChain);
+        interceptor.process(interceptorContextWithInput(null), interceptorChain);
 
         verify(metricsRegistry).timer("someCtxNameABC.action.total");
 
@@ -59,7 +59,7 @@ public class TotalActionMetricsInterceptorTest {
         when(metricsRegistry.timer(anyString())).thenReturn(timer);
         when(timer.time()).thenReturn(timerContext);
 
-        final InterceptorContext currentContext = interceptorContextWithInput(null, null);
+        final InterceptorContext currentContext = interceptorContextWithInput(null);
 
         interceptor.process(currentContext, interceptorChain);
 

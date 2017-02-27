@@ -10,6 +10,7 @@ import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 import static uk.gov.justice.services.adapters.rest.generator.Generators.byMimeTypeOrder;
 import static uk.gov.justice.services.adapters.rest.generator.Generators.componentFromBaseUriIn;
+import static uk.gov.justice.services.adapters.rest.helper.Multiparts.isMultipartResource;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_CONTROLLER;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_VIEW;
 import static uk.gov.justice.services.generators.commons.config.GeneratorProperties.serviceComponentOf;
@@ -61,6 +62,7 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeSpec;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
 import org.raml.model.Action;
 import org.raml.model.ActionType;
 import org.raml.model.MimeType;
@@ -82,6 +84,9 @@ class JaxRsImplementationGenerator {
 
     private static final String REST_PROCESSOR_NO_PAYLOAD_METHOD_STATEMENT = "return restProcessor.process($L, $L::process, $L.actionOf($S, \"GET\", headers), headers, $L.parameters())";
     private static final String REST_PROCESSOR_PAYLOAD_METHOD_STATEMENT = "return restProcessor.process($L, $L::process, $L.actionOf($S, $S, headers), %s, headers, $L.parameters())";
+    private static final String REST_PROCESSOR_MULTIPART_METHOD_STATEMENT = "return restProcessor.process($L, $L::process, $L.actionOf($S, $S, headers), headers, $L.parameters(), multipartInput)";
+
+    private static final String MULTIPART_INPUT = "multipartInput";
 
     private static final String VALID_PARAMETER_COLLECTION_BUILDER_VARAIBLE = "validParameterCollectionBuilder";
 
@@ -300,12 +305,33 @@ class JaxRsImplementationGenerator {
                                               final Action action,
                                               final MimeType bodyMimeType,
                                               final Optional<String> component) {
+        final String responseStrategy = isSynchronousAction(action) ? DEFAULT_RESPONSE_STRATEGY_FIELD : ACCEPTED_STATUS_NO_ENTITY_RESPONSE_STRATEGY_FIELD;
+
+        if (isMultipartResource(bodyMimeType)) {
+            return generateMultipartResourceMethod(resourceMethodName, action, responseStrategy);
+        } else {
+            return generateStandardResourceMethod(resourceMethodName, action, bodyMimeType, responseStrategy);
+        }
+    }
+
+    /**
+     * Generate standard POST or PUT resource method
+     *
+     * @param resourceMethodName - the name of this method
+     * @param action             - the action to retrieve query and path parameters.
+     * @param bodyMimeType       - the mime type to decide if payload parameter is required
+     * @param responseStrategy   - the response strategy for the method
+     * @return the method
+     */
+    private MethodSpec generateStandardResourceMethod(final String resourceMethodName,
+                                                      final Action action,
+                                                      final MimeType bodyMimeType,
+                                                      final String responseStrategy) {
         final Map<String, QueryParameter> queryParams = action.getQueryParameters();
         final Map<String, UriParameter> pathParams = action.getResource().getUriParameters();
 
         final boolean hasPayload = bodyMimeType.getSchema() != null;
         final String payloadStatementPart = hasPayload ? "$T.of(entity)" : "$T.empty()";
-        final String responseStrategy = isSynchronousAction(action) ? DEFAULT_RESPONSE_STRATEGY_FIELD : ACCEPTED_STATUS_NO_ENTITY_RESPONSE_STRATEGY_FIELD;
 
         final MethodSpec.Builder methodBuilder = generateGenericResourceMethod(resourceMethodName, queryParams, pathParams)
                 .addCode(methodBody(pathParams, methodBodyForPostOrPut(resourceMethodName, payloadStatementPart, action.getType(), responseStrategy)));
@@ -313,6 +339,30 @@ class JaxRsImplementationGenerator {
         if (hasPayload) {
             methodBuilder.addParameter(payloadParameter());
         }
+
+        return methodBuilder.build();
+    }
+
+    /**
+     * Generate multipart POST or PUT resource method
+     *
+     * @param resourceMethodName - the name of this method
+     * @param action             - the action to retrieve query and path parameters.
+     * @param responseStrategy   - the response strategy for the method
+     * @return the method
+     */
+    private MethodSpec generateMultipartResourceMethod(final String resourceMethodName,
+                                                       final Action action,
+                                                       final String responseStrategy) {
+        final Map<String, QueryParameter> queryParams = action.getQueryParameters();
+        final Map<String, UriParameter> pathParams = action.getResource().getUriParameters();
+
+        final MethodSpec.Builder methodBuilder = generateGenericResourceMethod(resourceMethodName, queryParams, pathParams)
+                .addCode(methodBody(pathParams, methodBodyForMultipartPost(resourceMethodName, action.getType(), responseStrategy)));
+
+        methodBuilder.addParameter(ParameterSpec
+                .builder(MultipartInput.class, MULTIPART_INPUT)
+                .build());
 
         return methodBuilder.build();
     }
@@ -402,6 +452,28 @@ class JaxRsImplementationGenerator {
                         resourceMethodName,
                         actionType.toString(),
                         Optional.class,
+                        VALID_PARAMETER_COLLECTION_BUILDER_VARAIBLE)
+                .build();
+    }
+
+    /**
+     * Supplier that produces code specific to a Multipart POST httpAction type.
+     *
+     * @param resourceMethodName name of the resource method
+     * @param actionType         the HTTP action type for this method
+     * @param responseStrategy   the response strategy to pass to the ResponseStrategyFactory
+     * @return the supplier that returns the {@link CodeBlock}
+     */
+    private Supplier<CodeBlock> methodBodyForMultipartPost(final String resourceMethodName,
+                                                           final ActionType actionType,
+                                                           final String responseStrategy) {
+        return () -> CodeBlock.builder()
+                .addStatement(REST_PROCESSOR_MULTIPART_METHOD_STATEMENT,
+                        responseStrategy,
+                        INTERCEPTOR_CHAIN_PROCESSOR_FIELD,
+                        ACTION_MAPPER_FIELD,
+                        resourceMethodName,
+                        actionType.toString(),
                         VALID_PARAMETER_COLLECTION_BUILDER_VARAIBLE)
                 .build();
     }

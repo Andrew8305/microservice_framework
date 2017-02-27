@@ -78,3 +78,22 @@ protocols: [ HTTP, HTTPS ]
         application/vnd.example.order-cake+json:
             schema: !include json/schema/example.order-cake.json
             example: !include json/order-cake.json
+
+/recipes/{recipeId}/photogragh:
+  post:
+    description: |
+      Upload recipe photograph
+      ...
+      (mapping):
+          requestType: application/vnd.x-www-form-urlencoded+json
+          name: example.upload-photogragh
+      ...
+    body:
+     application/vnd.x-www-form-urlencoded+json:
+    responses:
+      202:
+        description: Request accepted
+      400:
+        description: Bad Request
+      500:
+        description: Internal Server Error

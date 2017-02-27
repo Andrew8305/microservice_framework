@@ -43,8 +43,8 @@ public class EventFilterInterceptorTest {
         when(eventFilter.accepts("nameABC")).thenReturn(true);
 
         final InterceptorContext currentContext = interceptorContextWithInput(
-                envelope().with(metadataWithRandomUUID("nameABC")).build(), null);
-        final InterceptorContext nextInChain = interceptorContextWithInput(null, null);
+                envelope().with(metadataWithRandomUUID("nameABC")).build());
+        final InterceptorContext nextInChain = interceptorContextWithInput(null);
         when(interceptorChain.processNext(currentContext)).thenReturn(nextInChain);
 
         assertThat(eventFilterInterceptor.process(currentContext, interceptorChain), is(nextInChain));
@@ -56,7 +56,7 @@ public class EventFilterInterceptorTest {
 
         when(eventFilter.accepts("nameBCD")).thenReturn(false);
 
-        final InterceptorContext currentContext = interceptorContextWithInput(envelope().with(metadataWithRandomUUID("nameBCD")).build(), null);
+        final InterceptorContext currentContext = interceptorContextWithInput(envelope().with(metadataWithRandomUUID("nameBCD")).build());
         eventFilterInterceptor.process(currentContext, interceptorChain);
 
         assertThat(eventFilterInterceptor.process(currentContext, interceptorChain), is(currentContext));

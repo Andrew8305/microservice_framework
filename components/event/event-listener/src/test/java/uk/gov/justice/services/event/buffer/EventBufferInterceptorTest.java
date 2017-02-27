@@ -47,9 +47,6 @@ public class EventBufferInterceptorTest {
     private JsonEnvelope envelope_2;
 
     @Mock
-    private InjectionPoint injectionPoint;
-
-    @Mock
     private EventBufferService eventBufferService;
 
     private InterceptorChain interceptorChain;
@@ -66,7 +63,7 @@ public class EventBufferInterceptorTest {
 
     @Test
     public void shouldCallEventBufferServiceAndProcessStreamOfMultipleEventsReturned() throws Exception {
-        final InterceptorContext inputContext = interceptorContextWithInput(envelope_1, injectionPoint);
+        final InterceptorContext inputContext = interceptorContextWithInput(envelope_1);
         final Stream<JsonEnvelope> envelopes = Stream.of(envelope_1, envelope_2);
 
         when(eventBufferService.currentOrderedEventsWith(envelope_1)).thenReturn(envelopes);
@@ -80,7 +77,7 @@ public class EventBufferInterceptorTest {
     @Test
     public void shouldCallEventBufferServiceAndProcessEmptyStreamReturned() throws Exception {
         final Stream<JsonEnvelope> envelopeStream = Stream.empty();
-        final InterceptorContext interceptorContext = interceptorContextWithInput(envelope_1, injectionPoint);
+        final InterceptorContext interceptorContext = interceptorContextWithInput(envelope_1);
 
         when(eventBufferService.currentOrderedEventsWith(envelope_1)).thenReturn(envelopeStream);
 
@@ -102,7 +99,7 @@ public class EventBufferInterceptorTest {
         target = new TestTarget();
         interceptorChain = new InterceptorChain(interceptors, target);
 
-        final InterceptorContext inputContext = interceptorContextWithInput(envelope_1, injectionPoint);
+        final InterceptorContext inputContext = interceptorContextWithInput(envelope_1);
         final StreamCloseSpy streamSpy = new StreamCloseSpy();
         final Stream<JsonEnvelope> envelopes = Stream.of(this.envelope_1, envelope_2).onClose(streamSpy);
 
@@ -110,7 +107,7 @@ public class EventBufferInterceptorTest {
 
         try {
             interceptorChain.processNext(inputContext);
-        } catch (TestException e) {
+        } catch (TestException expected) {
             //do nothing
         }
         assertThat(streamSpy.streamClosed(), is(true));

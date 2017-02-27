@@ -4,11 +4,11 @@ package uk.gov.justice.services.adapter.rest.parameter;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import uk.gov.justice.services.rest.ParameterType;
+
 import java.math.BigDecimal;
 
 import org.junit.Test;
-
-import uk.gov.justice.services.rest.ParameterType;
 
 public class ParameterTest {
 

@@ -15,7 +15,7 @@ import javax.inject.Inject;
 /**
  * Interceptor to apply access control to local framework components.
  */
-public class AccessControlInterceptor implements Interceptor {
+public class LocalAccessControlInterceptor implements Interceptor {
 
     private static final int ACCESS_CONTROL_PRIORITY = 6000;
 
@@ -27,9 +27,8 @@ public class AccessControlInterceptor implements Interceptor {
 
     @Override
     public InterceptorContext process(final InterceptorContext interceptorContext, final InterceptorChain interceptorChain) {
-        if (isLocalComponentLocation(interceptorContext)) {
-            checkAccessControl(interceptorContext.inputEnvelope());
-        }
+
+        checkAccessControl(interceptorContext.inputEnvelope());
 
         return interceptorChain.processNext(interceptorContext);
     }
@@ -37,10 +36,6 @@ public class AccessControlInterceptor implements Interceptor {
     @Override
     public int priority() {
         return ACCESS_CONTROL_PRIORITY;
-    }
-
-    private boolean isLocalComponentLocation(final InterceptorContext interceptorContext) {
-        return LOCAL.equals(componentLocationFrom(interceptorContext.injectionPoint()));
     }
 
     private void checkAccessControl(final JsonEnvelope jsonEnvelope) {

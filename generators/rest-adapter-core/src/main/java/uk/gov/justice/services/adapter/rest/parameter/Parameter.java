@@ -2,9 +2,9 @@ package uk.gov.justice.services.adapter.rest.parameter;
 
 import static org.apache.commons.lang3.BooleanUtils.toBooleanObject;
 
-import java.math.BigDecimal;
-
 import uk.gov.justice.services.rest.ParameterType;
+
+import java.math.BigDecimal;
 /**
  * Query or path parameter
  */

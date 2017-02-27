@@ -43,8 +43,8 @@ public class RetryInterceptorTest {
     @Test
     public void shouldRetryIfExceptionThrownByDispatcher() throws Exception {
         final InterceptorContext currentContext = interceptorContextWithInput(
-                envelope().with(metadataWithRandomUUID("nameABC")).build(), null);
-        final InterceptorContext nextInChain = interceptorContextWithInput(null, null);
+                envelope().with(metadataWithRandomUUID("nameABC")).build());
+        final InterceptorContext nextInChain = interceptorContextWithInput(null);
 
         when(interceptorChain.processNext(currentContext))
                 .thenThrow(new OptimisticLockingRetryException("Locking Error"))
@@ -64,7 +64,7 @@ public class RetryInterceptorTest {
                 .withStreamId(streamId))
                 .build();
         final InterceptorContext currentContext = interceptorContextWithInput(
-                envelope, null);
+                envelope);
 
         when(interceptorChain.processNext(currentContext))
                 .thenThrow(new OptimisticLockingRetryException("Locking Error"));
@@ -82,8 +82,8 @@ public class RetryInterceptorTest {
     @Test
     public void shouldRetryStraightAwayForThreeAttemptsThenWaitBeforeRetry() throws Exception {
         final InterceptorContext currentContext = interceptorContextWithInput(
-                envelope().with(metadataWithRandomUUID("nameABC")).build(), null);
-        final InterceptorContext nextInChain = interceptorContextWithInput(null, null);
+                envelope().with(metadataWithRandomUUID("nameABC")).build());
+        final InterceptorContext nextInChain = interceptorContextWithInput(null);
 
         when(interceptorChain.processNext(currentContext))
                 .thenThrow(new OptimisticLockingRetryException("Locking Error"))

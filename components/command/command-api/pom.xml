@@ -13,6 +13,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
@@ -26,6 +31,42 @@
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>metrics</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <!-- TODO: Add to common bom -->
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>file-service-persistence</artifactId>
+            <version>1.1.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>uk.gov.justice.services</groupId>
+                    <artifactId>messaging-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!--Test dependencies-->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>test-utils-core</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
