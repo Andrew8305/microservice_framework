@@ -7,7 +7,13 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ### Added
 - MultipartRestClient in test-utils: client for multipart file uploads
-- LiquibaseDatabaseBootstrapper in test-utils: bootstraps a database using your liquibase scripts 
+- LiquibaseDatabaseBootstrapper in test-utils: bootstraps a database using your liquibase scripts
+- Ability for multipart endpoint to handle multiple files
+- Generators for generating multipart endpoints from RAML
+- Dependency on test-utils
+
+### Changed
+- Moved test utils classes to test-utils
 
 ### Fixed
 - Generate random ZonedDateTime in different time zones and provide option to generate in UTC specific timezone
