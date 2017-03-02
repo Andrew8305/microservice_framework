@@ -30,7 +30,8 @@ public class RecipeCommandApi {
         sender.send(command);
     }
 
-    @Handles("example.upload-photogragh")
+    @Handles("example.upload-photograph")
     public void uploadPhotograph(final JsonEnvelope command) {
+        sender.send(command);
     }
 }
