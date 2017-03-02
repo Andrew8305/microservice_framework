@@ -32,12 +32,9 @@
             <artifactId>metrics</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <!-- TODO: Add to common bom -->
         <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>file-service-persistence</artifactId>
-            <version>1.2.0</version>
         </dependency>
 
         <!--Test dependencies-->
