@@ -79,17 +79,17 @@ protocols: [ HTTP, HTTPS ]
             schema: !include json/schema/example.order-cake.json
             example: !include json/order-cake.json
 
-/recipes/{recipeId}/photogragh:
+/recipes/{recipeId}/photograph:
   post:
     description: |
       Upload recipe photograph
       ...
       (mapping):
-          requestType: application/vnd.x-www-form-urlencoded+json
-          name: example.upload-photogragh
+          requestType: multipart/form-data
+          name: example.upload-photograph
       ...
     body:
-     application/vnd.x-www-form-urlencoded+json:
+     multipart/form-data:
     responses:
       202:
         description: Request accepted

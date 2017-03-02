@@ -25,7 +25,6 @@ import org.slf4j.Logger;
  */
 public class EventLogJdbcRepository extends AbstractJdbcRepository<EventLog> {
 
-    //TODO @mrich 2016-09-29 - Re-enable the date_created field once liquibase scripts are configured
     @Inject
     Logger logger;
 
