@@ -14,6 +14,7 @@ import uk.gov.justice.services.adapter.rest.mutipart.MultipartInputParser;
 
 import java.util.Map;
 
+import javax.json.JsonObject;
 import javax.ws.rs.core.MultivaluedHashMap;
 
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
@@ -112,6 +113,34 @@ public class MultipartInputParserTest {
             multipartInputParser.extractFileName(inputPart);
         } catch (final BadRequestException expected) {
             assertThat(expected.getMessage(), is("Failed to find 'filename' in 'Content-Disposition' header"));
+        }
+    }
+
+    @Test
+    public void shouldReturnJsonObjectFromFirstPartOfMultipart() throws Exception {
+
+        final MultipartInput multipartInput = mock(MultipartInput.class);
+        final InputPart inputPart = mock(InputPart.class);
+        when(multipartInput.getParts()).thenReturn(singletonList(inputPart));
+        when(inputPart.getBodyAsString()).thenReturn("{}");
+
+        final JsonObject jsonObject = multipartInputParser.getPartMetadata(multipartInput);
+
+        assertThat(jsonObject.toString(), is("{}"));
+    }
+
+    @Test
+    public void shouldThrowABadRequestExceptionIfJsonObjectIsInvalid() throws Exception {
+
+        final MultipartInput multipartInput = mock(MultipartInput.class);
+        final InputPart inputPart = mock(InputPart.class);
+        when(multipartInput.getParts()).thenReturn(singletonList(inputPart));
+        when(inputPart.getBodyAsString()).thenReturn("");
+
+        try {
+            multipartInputParser.getPartMetadata(multipartInput);
+        } catch (final BadRequestException expected) {
+            assertThat(expected.getMessage(), is("Failed to get first input part as json object"));
         }
     }
 }

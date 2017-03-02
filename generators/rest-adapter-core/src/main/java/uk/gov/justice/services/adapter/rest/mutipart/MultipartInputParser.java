@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import javax.enterprise.context.ApplicationScoped;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.stream.JsonParsingException;
 
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
@@ -22,7 +23,6 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
 public class MultipartInputParser {
 
     private static final String CONTENT_DISPOSITION_HEADER_NAME = "Content-Disposition";
-
     private static final Pattern FIND_FILENAME_PATTERN = compile("^.*filename=\"(.*)\".*$");
 
     private static final int FILENAME_MATCHER_GROUP = 1;
@@ -31,20 +31,15 @@ public class MultipartInputParser {
     public JsonObject getPartMetadata(final MultipartInput multipartInput) {
 
         final InputPart inputPart = getInputPart(multipartInput, FIRST_PART_IN_LIST);
-        final String mediaType = inputPart.getMediaType().toString();
-        if (mediaType.startsWith("application/json")) {
 
-            try {
-                final String json = inputPart.getBodyAsString();
-                try (final JsonReader jsonReader = createReader(new StringReader(json))) {
-                    return jsonReader.readObject();
-                }
-            } catch (final IOException e) {
-                throw new BadRequestException("Failed to get first input part as json string");
+        try {
+            final String json = inputPart.getBodyAsString();
+            try (final JsonReader jsonReader = createReader(new StringReader(json))) {
+                return jsonReader.readObject();
             }
+        } catch (final IOException | JsonParsingException e) {
+            throw new BadRequestException("Failed to get first input part as json object");
         }
-
-        throw new BadRequestException("First part of mulitpart is not 'application/json");
     }
 
     public InputPart getInputPart(final MultipartInput multipartInput, final int index) {
