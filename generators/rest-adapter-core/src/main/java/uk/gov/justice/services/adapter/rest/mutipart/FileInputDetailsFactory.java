@@ -8,30 +8,33 @@ import uk.gov.justice.services.adapter.rest.interceptor.FileStoreFailedException
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 @ApplicationScoped
 public class FileInputDetailsFactory {
 
     @Inject
-    MultipartInputParser multipartInputParser;
+    InputPartFileNameExtractor inputPartFileNameExtractor;
 
-    public List<FileInputDetails> createFileInputDetailsFrom(final MultipartInput multipartInput, final List<PartDefinition> partDefinitions) {
-        return partDefinitions
+    public List<FileInputDetails> createFileInputDetailsFrom(final MultipartFormDataInput multipartFormDataInput, final List<String> fieldNames) {
+        final Map<String, List<InputPart>> formDataMap = multipartFormDataInput.getFormDataMap();
+
+        return fieldNames
                 .stream()
-                .map(partDefinition -> fileInputDetailsFrom(multipartInput, partDefinition))
+                .map(fieldName -> fileInputDetailsFrom(formDataMap, fieldName))
                 .collect(toList());
     }
 
-    private FileInputDetails fileInputDetailsFrom(final MultipartInput multipartInput, final PartDefinition partDefinition) {
-        final InputPart inputPart = multipartInputParser.getInputPart(multipartInput, partDefinition.getIndex());
-        final String fileName = multipartInputParser.extractFileName(inputPart);
-        final String fieldName = partDefinition.getFieldName();
+    private FileInputDetails fileInputDetailsFrom(final Map<String, List<InputPart>> formDataMap, final String fieldName) {
+        final InputPart inputPart = formDataMap.get(fieldName).get(0);
+
+        final String fileName = inputPartFileNameExtractor.extractFileName(inputPart);
 
         return new FileInputDetails(
                 fileName,

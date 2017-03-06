@@ -37,7 +37,7 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeSpec;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.raml.model.Action;
 import org.raml.model.ActionType;
 import org.raml.model.MimeType;
@@ -52,7 +52,7 @@ import org.raml.model.parameter.UriParameter;
 class JaxRsInterfaceGenerator {
 
     private static final String ANNOTATION_FORMAT = "$S";
-    private static final String MULTIPART_INPUT = "multipartInput";
+    private static final String MULTIPART_FORM_DATA_INPUT = "multipartFormDataInput";
 
     /**
      * Generate Java code for a Raml structure
@@ -166,7 +166,7 @@ class JaxRsInterfaceGenerator {
 
         if (isMultipartResource(bodyMimeType)) {
             methodBuilder.addParameter(ParameterSpec
-                    .builder(MultipartInput.class, MULTIPART_INPUT)
+                    .builder(MultipartFormDataInput.class, MULTIPART_FORM_DATA_INPUT)
                     .addAnnotation(MultipartForm.class)
                     .build());
         } else if (bodyMimeType.getSchema() != null) {

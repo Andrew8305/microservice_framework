@@ -1,7 +1,6 @@
 package uk.gov.justice.services.generators.commons.validator;
 
 import static org.raml.model.ActionType.POST;
-import static org.raml.model.ParamType.FILE;
 import static org.raml.model.ParamType.STRING;
 import static uk.gov.justice.services.generators.test.utils.builder.HttpActionBuilder.httpAction;
 import static uk.gov.justice.services.generators.test.utils.builder.MimeTypeBuilder.multipartMimeType;
@@ -27,7 +26,7 @@ public class MultipartHasFormParametersTest {
                 .with(resource("/some/path")
                         .with(httpAction()
                                 .withHttpActionType(POST)
-                                .withMediaTypeWithoutSchema(multipartWithFileFormParameter(0, "photoId")))
+                                .withMediaTypeWithoutSchema(multipartWithFileFormParameter("photoId")))
                 ).build();
 
         validator.validate(raml);
@@ -49,38 +48,6 @@ public class MultipartHasFormParametersTest {
     }
 
     @Test
-    public void shouldFailIfMultipartHasFormParameterWithIndexThatIsNotPartNumber() throws Exception {
-        exception.expect(RamlValidationException.class);
-        exception.expectMessage("Multipart form parameter index should be a number identifying the part index of the multipart form");
-
-        final Raml raml = restRamlWithDefaults()
-                .with(resource("/some/path")
-                        .with(httpAction()
-                                .withHttpActionType(POST)
-                                .withMediaTypeWithoutSchema(multipartMimeType()
-                                        .withStringIndexFormParameter("notANumber", "photoId", FILE)))
-                ).build();
-
-        validator.validate(raml);
-    }
-
-    @Test
-    public void shouldFailIfMultipartHasFormParameterWithNoFieldName() throws Exception {
-        exception.expect(RamlValidationException.class);
-        exception.expectMessage("Multipart form parameter requires a displayName to identify the field name of the file reference");
-
-        final Raml raml = restRamlWithDefaults()
-                .with(resource("/some/path")
-                        .with(httpAction()
-                                .withHttpActionType(POST)
-                                .withMediaTypeWithoutSchema(multipartMimeType()
-                                        .withNoDisplayNameFormParameter(0, FILE)))
-                ).build();
-
-        validator.validate(raml);
-    }
-
-    @Test
     public void shouldFailIfMultipartHasFormParameterWithIncorrectType() throws Exception {
         exception.expect(RamlValidationException.class);
         exception.expectMessage("Multipart form parameter is expected to be of type FILE, instead was STRING");
@@ -90,23 +57,17 @@ public class MultipartHasFormParametersTest {
                         .with(httpAction()
                                 .withHttpActionType(POST)
                                 .withMediaTypeWithoutSchema(multipartMimeType()
-                                        .withFormParameter(0, "photoId", STRING, true)))
+                                        .withFormParameter("photoId", STRING, true)))
                 ).build();
 
         validator.validate(raml);
     }
 
     @Test
-    public void shouldFailIfMultipartHasFormParameterThatAreOptional() throws Exception {
-        exception.expect(RamlValidationException.class);
-        exception.expectMessage("Multipart form parameter should be required not optional");
-
+    public void shouldPassIfNoMultipartPresent() throws Exception {
         final Raml raml = restRamlWithDefaults()
                 .with(resource("/some/path")
-                        .with(httpAction()
-                                .withHttpActionType(POST)
-                                .withMediaTypeWithoutSchema(multipartMimeType()
-                                        .withFormParameter(0, "photoId", FILE, false)))
+                        .withDefaultPostAction()
                 ).build();
 
         validator.validate(raml);

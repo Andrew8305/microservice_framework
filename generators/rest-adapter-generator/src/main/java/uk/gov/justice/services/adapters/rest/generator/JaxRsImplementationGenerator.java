@@ -2,7 +2,6 @@ package uk.gov.justice.services.adapters.rest.generator;
 
 import static com.squareup.javapoet.MethodSpec.methodBuilder;
 import static com.squareup.javapoet.TypeSpec.classBuilder;
-import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static javax.lang.model.element.Modifier.FINAL;
@@ -65,7 +64,7 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeSpec;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.raml.model.Action;
 import org.raml.model.ActionType;
 import org.raml.model.MimeType;
@@ -90,7 +89,7 @@ class JaxRsImplementationGenerator {
     private static final String REST_PROCESSOR_PAYLOAD_METHOD_STATEMENT = "return restProcessor.process($L, $L::process, $L.actionOf($S, $S, headers), %s, headers, $L.parameters())";
     private static final String REST_PROCESSOR_MULTIPART_METHOD_STATEMENT = "return restProcessor.process($L, $L::process, $L.actionOf($S, $S, headers), headers, $L.parameters(), $L.createFileInputDetailsFrom($L, $L.toList()))";
 
-    private static final String MULTIPART_INPUT = "multipartInput";
+    private static final String MULTIPART_FORM_DATA_INPUT = "multipartFormDataInput";
 
     private static final String VALID_PARAMETER_COLLECTION_BUILDER_VARAIBLE = "validParameterCollectionBuilder";
     private static final String PART_DEFINITIONS_BUILDER_VARIABLE = "partDefinitionsBuilder";
@@ -218,7 +217,7 @@ class JaxRsImplementationGenerator {
     /**
      * Process the body or bodies for each httpAction.
      *
-     * @param action    the httpAction to process
+     * @param action the httpAction to process
      * @return the list of {@link MethodSpec} that represents each method for the httpAction
      */
     private List<MethodSpec> forEach(final Action action) {
@@ -238,7 +237,7 @@ class JaxRsImplementationGenerator {
     /**
      * Process an httpAction with no body.
      *
-     * @param action    the httpAction to process
+     * @param action the httpAction to process
      * @return the {@link MethodSpec} that represents the method for the httpAction
      */
     private MethodSpec processNoActionBody(final Action action) {
@@ -249,7 +248,7 @@ class JaxRsImplementationGenerator {
     /**
      * Process an httpAction with one or more bodies.
      *
-     * @param action    the httpAction to process
+     * @param action the httpAction to process
      * @return the list of {@link MethodSpec} that represents each method for the httpAction
      */
     private List<MethodSpec> processOneOrMoreActionBodies(final Action action) {
@@ -364,7 +363,7 @@ class JaxRsImplementationGenerator {
                 .addCode(methodBody(pathParams, methodBodyForMultipartPost(resourceMethodName, action.getType(), bodyMimeType, responseStrategy)));
 
         methodBuilder.addParameter(ParameterSpec
-                .builder(MultipartInput.class, MULTIPART_INPUT)
+                .builder(MultipartFormDataInput.class, MULTIPART_FORM_DATA_INPUT)
                 .build());
 
         return methodBuilder.build();
@@ -474,7 +473,7 @@ class JaxRsImplementationGenerator {
 
         return () -> CodeBlock.builder()
                 .addStatement("$T $L = new $T()", partDefinitionsBuilderType, PART_DEFINITIONS_BUILDER_VARIABLE, partDefinitionsBuilderType)
-                .add(putAllFileFormPartsInPartDefintionsBuilder(bodyMimeType))
+                .add(putAllFileFormPartsInPartDefinitionsBuilder(bodyMimeType))
                 .addStatement(REST_PROCESSOR_MULTIPART_METHOD_STATEMENT,
                         responseStrategy,
                         INTERCEPTOR_CHAIN_PROCESSOR_FIELD,
@@ -483,23 +482,19 @@ class JaxRsImplementationGenerator {
                         actionType.toString(),
                         VALID_PARAMETER_COLLECTION_BUILDER_VARAIBLE,
                         FILE_INPUT_DETAILS_FACTORY_FIELD,
-                        MULTIPART_INPUT,
+                        MULTIPART_FORM_DATA_INPUT,
                         PART_DEFINITIONS_BUILDER_VARIABLE)
                 .build();
     }
 
-    private CodeBlock putAllFileFormPartsInPartDefintionsBuilder(final MimeType bodyMimeType) {
+    private CodeBlock putAllFileFormPartsInPartDefinitionsBuilder(final MimeType bodyMimeType) {
         final CodeBlock.Builder codeBlockBuilder = CodeBlock.builder();
 
         final Map<String, List<FormParameter>> formParameters = bodyMimeType.getFormParameters();
 
-        formParameters.forEach((key, parameters) -> {
-            final int partIndex = parseInt(key);
-            final String displayName = parameters.get(0).getDisplayName();
-
-            codeBlockBuilder.addStatement("$L.add($L, $S)", PART_DEFINITIONS_BUILDER_VARIABLE, partIndex, displayName);
+        formParameters.keySet().forEach(fieldName -> {
+            codeBlockBuilder.addStatement("$L.add($S)", PART_DEFINITIONS_BUILDER_VARIABLE, fieldName);
         });
-
 
         return codeBlockBuilder.build();
     }

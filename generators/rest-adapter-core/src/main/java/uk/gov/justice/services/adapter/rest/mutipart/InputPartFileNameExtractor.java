@@ -4,32 +4,19 @@ import static java.util.regex.Pattern.compile;
 
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.enterprise.context.ApplicationScoped;
 
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
 
 @ApplicationScoped
-public class MultipartInputParser {
+public class InputPartFileNameExtractor {
 
     private static final String CONTENT_DISPOSITION_HEADER_NAME = "Content-Disposition";
     private static final Pattern FIND_FILENAME_PATTERN = compile("^.*filename=\"(.*)\".*$");
     private static final int FILENAME_MATCHER_GROUP = 1;
-
-    public InputPart getInputPart(final MultipartInput multipartInput, final int index) {
-
-        final List<InputPart> inputParts = multipartInput.getParts();
-
-        if (inputParts.isEmpty()) {
-            throw new BadRequestException("No InputParts found in request");
-        }
-
-        return inputParts.get(index);
-    }
 
     public String extractFileName(final InputPart filePart) {
 

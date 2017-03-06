@@ -28,10 +28,10 @@ import java.util.function.Function;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
 import org.junit.Test;
 import org.mockito.Mock;
-
 
 public class RestAdapterGenerator_MultipartMethodBodyTest extends BaseRestAdapterGeneratorTest {
 
@@ -49,7 +49,7 @@ public class RestAdapterGenerator_MultipartMethodBodyTest extends BaseRestAdapte
                         .with(resource("/some/path")
                                 .with(httpAction()
                                         .withHttpActionType(POST)
-                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter(0, "photoId"))
+                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter("photoId"))
                                         .with(mapping()
                                                 .withName("upload")
                                                 .withRequestType(MULTIPART_FORM_DATA)))
@@ -65,7 +65,7 @@ public class RestAdapterGenerator_MultipartMethodBodyTest extends BaseRestAdapte
 
         final Method method = firstMethodOf(resourceClass);
 
-        final Object result = method.invoke(resourceObject, mock(MultipartInput.class));
+        final Object result = method.invoke(resourceObject, mock(MultipartFormDataInput.class));
 
         assertThat(result, is(processorResponse));
     }

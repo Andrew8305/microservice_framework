@@ -5,13 +5,13 @@ import java.util.List;
 
 public class PartDefinitionsBuilder {
 
-    private final List<PartDefinition> partDefinitions = new ArrayList<>();
+    private final List<String> partDefinitions = new ArrayList<>();
 
-    public void add(final int partIndex, final String fieldName) {
-        partDefinitions.add(new PartDefinition(partIndex, fieldName));
+    public void add(final String fieldName) {
+        partDefinitions.add(fieldName);
     }
 
-    public List<PartDefinition> toList() {
+    public List<String> toList() {
         return partDefinitions;
     }
 }

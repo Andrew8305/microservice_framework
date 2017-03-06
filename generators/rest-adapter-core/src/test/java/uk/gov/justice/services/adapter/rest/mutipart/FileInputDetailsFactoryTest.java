@@ -13,11 +13,13 @@ import uk.gov.justice.services.adapter.rest.interceptor.FileStoreFailedException
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
+import com.google.common.collect.ImmutableMap;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -28,7 +30,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class FileInputDetailsFactoryTest {
 
     @Mock
-    private MultipartInputParser multipartInputParser;
+    private InputPartFileNameExtractor inputPartFileNameExtractor;
 
     @InjectMocks
     private FileInputDetailsFactory fileInputDetailsFactory;
@@ -39,21 +41,21 @@ public class FileInputDetailsFactoryTest {
         final String fileName = "the-file-name.jpeg";
         final String fieldName = "myFieldName";
         final MediaType mediaType = TEXT_XML_TYPE;
-        final int index = 23;
-        final PartDefinition partDefinition = new PartDefinition(index, fieldName);
 
-        final MultipartInput multipartInput = mock(MultipartInput.class);
+        final MultipartFormDataInput multipartFormDataInput = mock(MultipartFormDataInput.class);
         final InputPart inputPart = mock(InputPart.class);
         final InputStream inputStream = mock(InputStream.class);
 
-        when(multipartInputParser.getInputPart(multipartInput, index)).thenReturn(inputPart);
-        when(multipartInputParser.extractFileName(inputPart)).thenReturn(fileName);
+        final Map<String, List<InputPart>> formDataMap = ImmutableMap.of(fieldName, singletonList(inputPart));
+
+        when(multipartFormDataInput.getFormDataMap()).thenReturn(formDataMap);
+        when(inputPartFileNameExtractor.extractFileName(inputPart)).thenReturn(fileName);
         when(inputPart.getMediaType()).thenReturn(mediaType);
         when(inputPart.getBody(InputStream.class, null)).thenReturn(inputStream);
 
         final List<FileInputDetails> fileInputDetails = fileInputDetailsFactory.createFileInputDetailsFrom(
-                multipartInput,
-                singletonList(partDefinition));
+                multipartFormDataInput,
+                singletonList(fieldName));
 
         final FileInputDetails inputDetails = fileInputDetails.get(0);
         assertThat(inputDetails.getFileName(), is(fileName));
@@ -71,22 +73,21 @@ public class FileInputDetailsFactoryTest {
 
         final String fileName = "the-file-name.jpeg";
         final String fieldName = "myFieldName";
-        final MediaType mediaType = TEXT_XML_TYPE;
-        final int index = 23;
-        final PartDefinition partDefinition = new PartDefinition(index, fieldName);
 
-        final MultipartInput multipartInput = mock(MultipartInput.class);
+        final MultipartFormDataInput multipartFormDataInput = mock(MultipartFormDataInput.class);
         final InputPart inputPart = mock(InputPart.class);
 
-        when(multipartInputParser.getInputPart(multipartInput, index)).thenReturn(inputPart);
-        when(multipartInputParser.extractFileName(inputPart)).thenReturn(fileName);
-        when(inputPart.getMediaType()).thenReturn(mediaType);
+        final Map<String, List<InputPart>> formDataMap = ImmutableMap.of(fieldName, singletonList(inputPart));
+
+        when(multipartFormDataInput.getFormDataMap()).thenReturn(formDataMap);
+        when(inputPartFileNameExtractor.extractFileName(inputPart)).thenReturn(fileName);
+        when(inputPart.getMediaType()).thenReturn(TEXT_XML_TYPE);
         when(inputPart.getBody(InputStream.class, null)).thenThrow(ioException);
 
         try {
             fileInputDetailsFactory.createFileInputDetailsFrom(
-                    multipartInput,
-                    singletonList(partDefinition));
+                    multipartFormDataInput,
+                    singletonList(fieldName));
             fail();
         } catch (final FileStoreFailedException expected) {
             assertThat(expected.getCause(), is(ioException));

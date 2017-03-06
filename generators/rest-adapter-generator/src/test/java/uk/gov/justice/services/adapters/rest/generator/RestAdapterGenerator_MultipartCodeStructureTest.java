@@ -32,7 +32,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.junit.Test;
 
 public class RestAdapterGenerator_MultipartCodeStructureTest extends BaseRestAdapterGeneratorTest {
@@ -44,7 +44,7 @@ public class RestAdapterGenerator_MultipartCodeStructureTest extends BaseRestAda
                         .with(resource("/some/path")
                                 .with(httpAction()
                                         .withHttpActionType(POST)
-                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter(0, "photoId"))
+                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter("photoId"))
                                         .with(mapping()
                                                 .withName("upload")
                                                 .withRequestType(MULTIPART_FORM_DATA)))
@@ -71,7 +71,7 @@ public class RestAdapterGenerator_MultipartCodeStructureTest extends BaseRestAda
                         .with(resource("/some/path")
                                 .with(httpAction()
                                         .withHttpActionType(POST)
-                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter(0, "photoId"))
+                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter("photoId"))
                                         .with(mapping()
                                                 .withName("upload")
                                                 .withRequestType(MULTIPART_FORM_DATA)))
@@ -85,7 +85,7 @@ public class RestAdapterGenerator_MultipartCodeStructureTest extends BaseRestAda
         final Method method = methods.get(0);
         assertThat(method.getParameterCount(), is(1));
         final Parameter parameter = method.getParameters()[0];
-        assertThat(parameter.getType(), equalTo(MultipartInput.class));
+        assertThat(parameter.getType(), equalTo(MultipartFormDataInput.class));
         assertThat(parameter.getAnnotation(MultipartForm.class), not(nullValue()));
     }
 
@@ -96,7 +96,7 @@ public class RestAdapterGenerator_MultipartCodeStructureTest extends BaseRestAda
                         .with(resource("/some/path")
                                 .with(httpAction()
                                         .withHttpActionType(POST)
-                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter(0, "photoId"))
+                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter("photoId"))
                                         .with(mapping()
                                                 .withName("upload")
                                                 .withRequestType(MULTIPART_FORM_DATA)))
@@ -126,7 +126,7 @@ public class RestAdapterGenerator_MultipartCodeStructureTest extends BaseRestAda
         assertThat(methodParam2.getAnnotation(PathParam.class).value(), is("paramB"));
 
         final Parameter methodParam3 = method.getParameters()[2];
-        assertThat(methodParam3.getType(), equalTo(MultipartInput.class));
+        assertThat(methodParam3.getType(), equalTo(MultipartFormDataInput.class));
         assertThat(methodParam3.getAnnotation(MultipartForm.class), not(nullValue()));
     }
 
@@ -137,7 +137,7 @@ public class RestAdapterGenerator_MultipartCodeStructureTest extends BaseRestAda
                         .with(resource("/some/path")
                                 .with(httpAction()
                                         .withHttpActionType(POST)
-                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter(0, "photoId"))
+                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter("photoId"))
                                         .with(mapping()
                                                 .withName("upload")
                                                 .withRequestType(MULTIPART_FORM_DATA)))
@@ -159,7 +159,7 @@ public class RestAdapterGenerator_MultipartCodeStructureTest extends BaseRestAda
                         .with(resource("/some/path")
                                 .with(httpAction()
                                         .withHttpActionType(POST)
-                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter(0, "photoId"))
+                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter("photoId"))
                                         .with(mapping()
                                                 .withName("upload")
                                                 .withRequestType(MULTIPART_FORM_DATA)))

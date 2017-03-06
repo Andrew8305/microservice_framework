@@ -11,47 +11,36 @@ public class PartDefinitionsBuilderTest {
 
     @Test
     public void shouldAddPartDefinitionAndReturnAsListOfPartDefintions() throws Exception {
-        final int partIndex = 3;
         final String fieldName = "testField";
 
         final PartDefinitionsBuilder partDefinitionsBuilder = new PartDefinitionsBuilder();
-        partDefinitionsBuilder.add(partIndex, fieldName);
-        final List<PartDefinition> result = partDefinitionsBuilder.toList();
+        partDefinitionsBuilder.add(fieldName);
+        final List<String> results = partDefinitionsBuilder.toList();
 
-        assertThat(result.size(), is(1));
+        assertThat(results.size(), is(1));
 
-        final PartDefinition partDefinition = result.get(0);
-        assertThat(partDefinition.getIndex(), is(partIndex));
-        assertThat(partDefinition.getFieldName(), is(fieldName));
+        final String result = results.get(0);
+        assertThat(result, is(fieldName));
     }
 
     @Test
     public void shouldAddMultiplePartDefinitionsAndReturnAsListOfPartDefintions() throws Exception {
-        final int partIndex1 = 1;
         final String fieldName1 = "testField 1";
-        final int partIndex2 = 2;
         final String fieldName2 = "testField 2";
-        final int partIndex3 = 3;
         final String fieldName3 = "testField 3";
 
         final PartDefinitionsBuilder partDefinitionsBuilder = new PartDefinitionsBuilder();
 
-        partDefinitionsBuilder.add(partIndex1, fieldName1);
-        partDefinitionsBuilder.add(partIndex2, fieldName2);
-        partDefinitionsBuilder.add(partIndex3, fieldName3);
+        partDefinitionsBuilder.add(fieldName1);
+        partDefinitionsBuilder.add(fieldName2);
+        partDefinitionsBuilder.add(fieldName3);
 
-        final List<PartDefinition> result = partDefinitionsBuilder.toList();
+        final List<String> results = partDefinitionsBuilder.toList();
 
-        assertThat(result.size(), is(3));
-
-        assertThat(result.get(0).getIndex(), is(partIndex1));
-        assertThat(result.get(0).getFieldName(), is(fieldName1));
-
-        assertThat(result.get(1).getIndex(), is(partIndex2));
-        assertThat(result.get(1).getFieldName(), is(fieldName2));
-
-        assertThat(result.get(2).getIndex(), is(partIndex3));
-        assertThat(result.get(2).getFieldName(), is(fieldName3));
+        assertThat(results.size(), is(3));
+        assertThat(results.get(0), is(fieldName1));
+        assertThat(results.get(1), is(fieldName2));
+        assertThat(results.get(2), is(fieldName3));
     }
 
     @Test

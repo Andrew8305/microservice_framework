@@ -25,50 +25,39 @@ public class MimeTypeBuilder {
         return new MimeTypeBuilder(MULTIPART_FORM_DATA);
     }
 
-    public static MimeTypeBuilder multipartWithFileFormParameter(final int index, final String displayName) {
+    public static MimeTypeBuilder multipartWithFileFormParameter(final String fieldName) {
         final MimeTypeBuilder mimeTypeBuilder = multipartMimeType();
-        mimeTypeBuilder.withRequiredFileTypeFormParameter(index, displayName);
+        mimeTypeBuilder.withRequiredFileTypeFormParameter(fieldName);
         return mimeTypeBuilder;
     }
 
-    public MimeTypeBuilder withRequiredFileTypeFormParameter(final int index, final String displayName) {
-        return withFormParameter(index, displayName, FILE, true);
+    public MimeTypeBuilder withRequiredFileTypeFormParameter(final String fieldName) {
+        return withFormParameter(fieldName, FILE, true);
     }
 
-    public MimeTypeBuilder withRequiredFormParameter(final int index, final String displayName, final ParamType paramType) {
-        return withFormParameter(index, displayName, paramType, true);
+    public MimeTypeBuilder withRequiredFormParameter(final String fieldName, final ParamType paramType) {
+        return withFormParameter(fieldName, paramType, true);
     }
 
-    public MimeTypeBuilder withOptionalFormParameter(final int index, final String displayName, final ParamType paramType) {
-        return withFormParameter(index, displayName, paramType, false);
+    public MimeTypeBuilder withOptionalFormParameter(final String fieldName, final ParamType paramType) {
+        return withFormParameter(fieldName, paramType, false);
     }
 
-    public MimeTypeBuilder withStringIndexFormParameter(final String index, final String displayName, final ParamType paramType) {
-        final FormParameter formParameter = new FormParameter();
-        formParameter.setType(paramType);
-        formParameter.setDisplayName(displayName);
-        formParameter.setRequired(true);
-
-        formParameters.put(index, singletonList(formParameter));
-        return this;
-    }
-
-    public MimeTypeBuilder withNoDisplayNameFormParameter(final int index, final ParamType paramType) {
+    public MimeTypeBuilder withNoDisplayNameFormParameter(final String fieldName, final ParamType paramType) {
         final FormParameter formParameter = new FormParameter();
         formParameter.setType(paramType);
         formParameter.setRequired(true);
 
-        formParameters.put(String.valueOf(index), singletonList(formParameter));
+        formParameters.put(fieldName, singletonList(formParameter));
         return this;
     }
 
-    public MimeTypeBuilder withFormParameter(final int index, final String displayName, final ParamType paramType, final boolean required) {
+    public MimeTypeBuilder withFormParameter(final String fieldName, final ParamType paramType, final boolean required) {
         final FormParameter formParameter = new FormParameter();
         formParameter.setType(paramType);
-        formParameter.setDisplayName(displayName);
         formParameter.setRequired(required);
 
-        formParameters.put(String.valueOf(index), singletonList(formParameter));
+        formParameters.put(fieldName, singletonList(formParameter));
         return this;
     }
 

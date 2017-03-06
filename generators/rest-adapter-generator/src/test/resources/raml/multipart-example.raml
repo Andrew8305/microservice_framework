@@ -17,11 +17,9 @@ protocols: [ HTTP, HTTPS ]
     body:
         multipart/form-data:
             formParameters:
-                0:
+                photoId:
                     description: Photograph of user
                     type: file
-                    displayName: photoId
-                    required: true
     responses:
         202:
             description: Request accepted

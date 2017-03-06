@@ -14,7 +14,7 @@ import uk.gov.justice.services.adapter.rest.interceptor.JsonSchemaValidationInte
 import uk.gov.justice.services.adapter.rest.mapper.BadRequestExceptionMapper;
 import uk.gov.justice.services.adapter.rest.mutipart.FileBasedInterceptorContextFactory;
 import uk.gov.justice.services.adapter.rest.mutipart.FileInputDetailsFactory;
-import uk.gov.justice.services.adapter.rest.mutipart.MultipartInputParser;
+import uk.gov.justice.services.adapter.rest.mutipart.InputPartFileNameExtractor;
 import uk.gov.justice.services.adapter.rest.processor.DefaultRestProcessor;
 import uk.gov.justice.services.adapter.rest.processor.response.AcceptedStatusNoEntityResponseStrategy;
 import uk.gov.justice.services.adapter.rest.processor.response.OkStatusEnvelopeEntityResponseStrategy;
@@ -119,7 +119,7 @@ public class DefaultCustomUserIdResourceIT {
             LoggerProducer.class,
             StringToJsonObjectConverter.class,
             FileBasedInterceptorContextFactory.class,
-            MultipartInputParser.class,
+            InputPartFileNameExtractor.class,
             FileInputDetailsFactory.class
     })
     public WebApp war() {
