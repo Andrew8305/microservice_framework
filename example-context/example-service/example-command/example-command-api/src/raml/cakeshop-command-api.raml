@@ -90,6 +90,10 @@ protocols: [ HTTP, HTTPS ]
       ...
     body:
      multipart/form-data:
+      formParameters:
+        photoId:
+          description: Photo of recipe
+          type: file
     responses:
       202:
         description: Request accepted

@@ -678,15 +678,11 @@ public class CakeShopIT {
 
     @Test
     public void shouldReturnAcceptedStatusAndCreatEventWhenPostingPhotographToMultipartEndpoint() throws Exception {
+
         final String recipeId = "163af847-effb-46a9-96bc-32a0f7526f22";
+        final String fieldName = "photoId";
         final String filename = "for-testing-file-store.jpg";
         final File file = new File(getResource(filename).getFile());
-        final JsonObject partMetadata = createObjectBuilder()
-                .add("parts", createArrayBuilder()
-                        .add(createObjectBuilder()
-                                .add("fieldName", "photoId")
-                                .add("filePartIndex", "1")))
-                .build();
 
         addRecipe(recipeId, "Cheesy cheese cake");
 
@@ -694,8 +690,7 @@ public class CakeShopIT {
 
         final HttpEntity httpEntity = MultipartEntityBuilder.create()
                 .setMode(BROWSER_COMPATIBLE)
-                .addTextBody("metadata", partMetadata.toString(), APPLICATION_JSON)
-                .addBinaryBody("file", file, APPLICATION_OCTET_STREAM, filename)
+                .addBinaryBody(fieldName, file, APPLICATION_OCTET_STREAM, filename)
                 .build();
 
         final HttpPost request = new HttpPost(RECIPES_RESOURCE_URI + recipeId + "/photograph");
