@@ -12,15 +12,20 @@ import static org.junit.Assert.assertThat;
 import static org.raml.model.ActionType.POST;
 import static uk.gov.justice.services.generators.test.utils.builder.HttpActionBuilder.httpAction;
 import static uk.gov.justice.services.generators.test.utils.builder.MappingBuilder.mapping;
+import static uk.gov.justice.services.generators.test.utils.builder.MimeTypeBuilder.multipartWithFileFormParameter;
 import static uk.gov.justice.services.generators.test.utils.builder.RamlBuilder.restRamlWithDefaults;
 import static uk.gov.justice.services.generators.test.utils.builder.ResourceBuilder.resource;
 import static uk.gov.justice.services.generators.test.utils.config.GeneratorConfigUtil.configurationWithBasePackage;
 import static uk.gov.justice.services.generators.test.utils.reflection.ReflectionUtil.methodsOf;
 
+import uk.gov.justice.services.adapter.rest.mutipart.FileInputDetailsFactory;
+
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.List;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -37,7 +42,9 @@ public class RestAdapterGenerator_MultipartCodeStructureTest extends BaseRestAda
         generator.run(
                 restRamlWithDefaults()
                         .with(resource("/some/path")
-                                .with(httpAction(POST, MULTIPART_FORM_DATA)
+                                .with(httpAction()
+                                        .withHttpActionType(POST)
+                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter(0, "photoId"))
                                         .with(mapping()
                                                 .withName("upload")
                                                 .withRequestType(MULTIPART_FORM_DATA)))
@@ -62,7 +69,9 @@ public class RestAdapterGenerator_MultipartCodeStructureTest extends BaseRestAda
         generator.run(
                 restRamlWithDefaults()
                         .with(resource("/some/path")
-                                .with(httpAction(POST, MULTIPART_FORM_DATA)
+                                .with(httpAction()
+                                        .withHttpActionType(POST)
+                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter(0, "photoId"))
                                         .with(mapping()
                                                 .withName("upload")
                                                 .withRequestType(MULTIPART_FORM_DATA)))
@@ -85,7 +94,9 @@ public class RestAdapterGenerator_MultipartCodeStructureTest extends BaseRestAda
         generator.run(
                 restRamlWithDefaults()
                         .with(resource("/some/path")
-                                .with(httpAction(POST, MULTIPART_FORM_DATA)
+                                .with(httpAction()
+                                        .withHttpActionType(POST)
+                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter(0, "photoId"))
                                         .with(mapping()
                                                 .withName("upload")
                                                 .withRequestType(MULTIPART_FORM_DATA)))
@@ -124,7 +135,9 @@ public class RestAdapterGenerator_MultipartCodeStructureTest extends BaseRestAda
         generator.run(
                 restRamlWithDefaults()
                         .with(resource("/some/path")
-                                .with(httpAction(POST, MULTIPART_FORM_DATA)
+                                .with(httpAction()
+                                        .withHttpActionType(POST)
+                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter(0, "photoId"))
                                         .with(mapping()
                                                 .withName("upload")
                                                 .withRequestType(MULTIPART_FORM_DATA)))
@@ -137,5 +150,28 @@ public class RestAdapterGenerator_MultipartCodeStructureTest extends BaseRestAda
         assertThat(resourceClass.isInterface(), is(false));
         assertThat(resourceClass.getGenericInterfaces(), arrayWithSize(1));
         assertThat(resourceClass.getGenericInterfaces()[0].getTypeName(), equalTo(resourceInterface.getTypeName()));
+    }
+
+    @Test
+    public void shouldGenerateResourceClassWithInjectedFileInputDetailsFactory() throws Exception {
+        generator.run(
+                restRamlWithDefaults()
+                        .with(resource("/some/path")
+                                .with(httpAction()
+                                        .withHttpActionType(POST)
+                                        .withMediaTypeWithoutSchema(multipartWithFileFormParameter(0, "photoId"))
+                                        .with(mapping()
+                                                .withName("upload")
+                                                .withRequestType(MULTIPART_FORM_DATA)))
+                        ).build(),
+                configurationWithBasePackage(BASE_PACKAGE, outputFolder, emptyMap()));
+
+        final Class<?> resourceClass = compiler.compiledClassOf(BASE_PACKAGE, "resource", "DefaultSomePathResource");
+
+        final Field chainProcess = resourceClass.getDeclaredField("fileInputDetailsFactory");
+        assertThat(chainProcess, not(nullValue()));
+        assertThat(chainProcess.getType(), equalTo(FileInputDetailsFactory.class));
+        assertThat(chainProcess.getAnnotation(Inject.class), not(nullValue()));
+        assertThat(chainProcess.getModifiers(), is(0));
     }
 }

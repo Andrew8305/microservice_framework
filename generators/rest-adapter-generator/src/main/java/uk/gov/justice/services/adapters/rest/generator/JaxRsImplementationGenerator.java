@@ -2,6 +2,7 @@ package uk.gov.justice.services.adapters.rest.generator;
 
 import static com.squareup.javapoet.MethodSpec.methodBuilder;
 import static com.squareup.javapoet.TypeSpec.classBuilder;
+import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static javax.lang.model.element.Modifier.FINAL;
@@ -28,6 +29,8 @@ import static uk.gov.justice.services.generators.commons.helper.Names.resourceIn
 
 import uk.gov.justice.raml.core.GeneratorConfig;
 import uk.gov.justice.services.adapter.rest.BasicActionMapper;
+import uk.gov.justice.services.adapter.rest.mutipart.FileInputDetailsFactory;
+import uk.gov.justice.services.adapter.rest.mutipart.PartDefinitionsBuilder;
 import uk.gov.justice.services.adapter.rest.parameter.ValidParameterCollectionBuilder;
 import uk.gov.justice.services.adapter.rest.processor.RestProcessor;
 import uk.gov.justice.services.adapter.rest.processor.response.ResponseStrategies;
@@ -68,6 +71,7 @@ import org.raml.model.ActionType;
 import org.raml.model.MimeType;
 import org.raml.model.Raml;
 import org.raml.model.Resource;
+import org.raml.model.parameter.FormParameter;
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
 import org.slf4j.Logger;
@@ -84,16 +88,18 @@ class JaxRsImplementationGenerator {
 
     private static final String REST_PROCESSOR_NO_PAYLOAD_METHOD_STATEMENT = "return restProcessor.process($L, $L::process, $L.actionOf($S, \"GET\", headers), headers, $L.parameters())";
     private static final String REST_PROCESSOR_PAYLOAD_METHOD_STATEMENT = "return restProcessor.process($L, $L::process, $L.actionOf($S, $S, headers), %s, headers, $L.parameters())";
-    private static final String REST_PROCESSOR_MULTIPART_METHOD_STATEMENT = "return restProcessor.process($L, $L::process, $L.actionOf($S, $S, headers), headers, $L.parameters(), multipartInput)";
+    private static final String REST_PROCESSOR_MULTIPART_METHOD_STATEMENT = "return restProcessor.process($L, $L::process, $L.actionOf($S, $S, headers), headers, $L.parameters(), $L.createFileInputDetailsFrom($L, $L.toList()))";
 
     private static final String MULTIPART_INPUT = "multipartInput";
 
     private static final String VALID_PARAMETER_COLLECTION_BUILDER_VARAIBLE = "validParameterCollectionBuilder";
+    private static final String PART_DEFINITIONS_BUILDER_VARIABLE = "partDefinitionsBuilder";
 
     private static final String INTERCEPTOR_CHAIN_PROCESSOR_FIELD = "interceptorChainProcessor";
     private static final String ACTION_MAPPER_FIELD = "actionMapper";
     private static final String ACCEPTED_STATUS_NO_ENTITY_RESPONSE_STRATEGY_FIELD = "acceptedStatusNoEntityResponseStrategy";
     private static final String DEFAULT_RESPONSE_STRATEGY_FIELD = "responseStrategy";
+    private static final String FILE_INPUT_DETAILS_FACTORY_FIELD = "fileInputDetailsFactory";
 
     private static final String ACCEPTED_STATUS_NO_ENTITY_RESPONSE_STRATEGY_LITERAL = "ACCEPTED_STATUS_NO_ENTITY_RESPONSE_STRATEGY";
     private static final String OK_STATUS_ENVELOPE_ENTITY_RESPONSE_STRATEGY_LITERAL = "OK_STATUS_ENVELOPE_ENTITY_RESPONSE_STRATEGY";
@@ -133,7 +139,7 @@ class JaxRsImplementationGenerator {
     private TypeSpec generateFor(final Resource resource, final Optional<String> component) {
         final TypeSpec.Builder classSpecBuilder = classSpecFor(resource, component);
 
-        resource.getActions().values().forEach(action -> classSpecBuilder.addMethods(forEach(action, component)));
+        resource.getActions().values().forEach(action -> classSpecBuilder.addMethods(forEach(action)));
 
         return classSpecBuilder.build();
     }
@@ -176,6 +182,9 @@ class JaxRsImplementationGenerator {
                         .build())
                 .addField(FieldSpec.builder(HttpHeaders.class, "headers")
                         .addAnnotation(Context.class)
+                        .build())
+                .addField(FieldSpec.builder(FileInputDetailsFactory.class, FILE_INPUT_DETAILS_FACTORY_FIELD)
+                        .addAnnotation(Inject.class)
                         .build());
     }
 
@@ -210,17 +219,16 @@ class JaxRsImplementationGenerator {
      * Process the body or bodies for each httpAction.
      *
      * @param action    the httpAction to process
-     * @param component the optional component for this class
      * @return the list of {@link MethodSpec} that represents each method for the httpAction
      */
-    private List<MethodSpec> forEach(final Action action, final Optional<String> component) {
+    private List<MethodSpec> forEach(final Action action) {
         final ActionType actionType = action.getType();
 
         if (isSupportedActionType(actionType)) {
             if (isSupportedActionTypeWithResponseTypeOnly(actionType)) {
-                return singletonList(processNoActionBody(action, component));
+                return singletonList(processNoActionBody(action));
             } else {
-                return processOneOrMoreActionBodies(action, component);
+                return processOneOrMoreActionBodies(action);
             }
         }
 
@@ -231,25 +239,23 @@ class JaxRsImplementationGenerator {
      * Process an httpAction with no body.
      *
      * @param action    the httpAction to process
-     * @param component the optional component for this class
      * @return the {@link MethodSpec} that represents the method for the httpAction
      */
-    private MethodSpec processNoActionBody(final Action action, final Optional<String> component) {
+    private MethodSpec processNoActionBody(final Action action) {
         final String resourceMethodName = buildResourceMethodNameWithNoMimeType(action);
-        return generateGetResourceMethod(resourceMethodName, action, component);
+        return generateGetResourceMethod(resourceMethodName, action);
     }
 
     /**
      * Process an httpAction with one or more bodies.
      *
      * @param action    the httpAction to process
-     * @param component the optional component for this class
      * @return the list of {@link MethodSpec} that represents each method for the httpAction
      */
-    private List<MethodSpec> processOneOrMoreActionBodies(final Action action, final Optional<String> component) {
+    private List<MethodSpec> processOneOrMoreActionBodies(final Action action) {
         return action.getBody().values().stream()
                 .sorted(byMimeTypeOrder())
-                .map(bodyMimeType -> buildMethodSpecForMimeType(action, bodyMimeType, component))
+                .map(bodyMimeType -> buildMethodSpecForMimeType(action, bodyMimeType))
                 .collect(Collectors.toList());
     }
 
@@ -258,12 +264,11 @@ class JaxRsImplementationGenerator {
      *
      * @param action       - the action
      * @param bodyMimeType - the mime type to process
-     * @param component    the optional component for this class
      * @return - a method specification
      */
-    private MethodSpec buildMethodSpecForMimeType(final Action action, final MimeType bodyMimeType, final Optional<String> component) {
+    private MethodSpec buildMethodSpecForMimeType(final Action action, final MimeType bodyMimeType) {
         final String resourceMethodName = buildResourceMethodName(action, bodyMimeType);
-        return generateResourceMethod(resourceMethodName, action, bodyMimeType, component);
+        return generateResourceMethod(resourceMethodName, action, bodyMimeType);
     }
 
     /**
@@ -298,17 +303,15 @@ class JaxRsImplementationGenerator {
      * @param resourceMethodName - the name of this method
      * @param action             - the action to retrieve query and path parameters.
      * @param bodyMimeType       - the mime type to decide if payload parameter is required
-     * @param component          the optional component for this class
      * @return the method
      */
     private MethodSpec generateResourceMethod(final String resourceMethodName,
                                               final Action action,
-                                              final MimeType bodyMimeType,
-                                              final Optional<String> component) {
+                                              final MimeType bodyMimeType) {
         final String responseStrategy = isSynchronousAction(action) ? DEFAULT_RESPONSE_STRATEGY_FIELD : ACCEPTED_STATUS_NO_ENTITY_RESPONSE_STRATEGY_FIELD;
 
         if (isMultipartResource(bodyMimeType)) {
-            return generateMultipartResourceMethod(resourceMethodName, action, responseStrategy);
+            return generateMultipartResourceMethod(resourceMethodName, action, bodyMimeType, responseStrategy);
         } else {
             return generateStandardResourceMethod(resourceMethodName, action, bodyMimeType, responseStrategy);
         }
@@ -348,17 +351,17 @@ class JaxRsImplementationGenerator {
      *
      * @param resourceMethodName - the name of this method
      * @param action             - the action to retrieve query and path parameters.
-     * @param responseStrategy   - the response strategy for the method
-     * @return the method
+     * @param responseStrategy   - the response strategy for the method  @return the method
      */
     private MethodSpec generateMultipartResourceMethod(final String resourceMethodName,
                                                        final Action action,
+                                                       final MimeType bodyMimeType,
                                                        final String responseStrategy) {
         final Map<String, QueryParameter> queryParams = action.getQueryParameters();
         final Map<String, UriParameter> pathParams = action.getResource().getUriParameters();
 
         final MethodSpec.Builder methodBuilder = generateGenericResourceMethod(resourceMethodName, queryParams, pathParams)
-                .addCode(methodBody(pathParams, methodBodyForMultipartPost(resourceMethodName, action.getType(), responseStrategy)));
+                .addCode(methodBody(pathParams, methodBodyForMultipartPost(resourceMethodName, action.getType(), bodyMimeType, responseStrategy)));
 
         methodBuilder.addParameter(ParameterSpec
                 .builder(MultipartInput.class, MULTIPART_INPUT)
@@ -372,12 +375,10 @@ class JaxRsImplementationGenerator {
      *
      * @param resourceMethodName - the name of this method
      * @param action             - the action to retrieve query and path parameters.
-     * @param component          the optional component for this class
      * @return the method
      */
     private MethodSpec generateGetResourceMethod(final String resourceMethodName,
-                                                 final Action action,
-                                                 final Optional<String> component) {
+                                                 final Action action) {
         final Map<String, QueryParameter> queryParams = action.getQueryParameters();
         final Map<String, UriParameter> pathParams = action.getResource().getUriParameters();
 
@@ -461,21 +462,46 @@ class JaxRsImplementationGenerator {
      *
      * @param resourceMethodName name of the resource method
      * @param actionType         the HTTP action type for this method
+     * @param bodyMimeType       the mime type to retrieve the file parts from
      * @param responseStrategy   the response strategy to pass to the ResponseStrategyFactory
      * @return the supplier that returns the {@link CodeBlock}
      */
     private Supplier<CodeBlock> methodBodyForMultipartPost(final String resourceMethodName,
                                                            final ActionType actionType,
+                                                           final MimeType bodyMimeType,
                                                            final String responseStrategy) {
+        final ClassName partDefinitionsBuilderType = ClassName.get(PartDefinitionsBuilder.class);
+
         return () -> CodeBlock.builder()
+                .addStatement("$T $L = new $T()", partDefinitionsBuilderType, PART_DEFINITIONS_BUILDER_VARIABLE, partDefinitionsBuilderType)
+                .add(putAllFileFormPartsInPartDefintionsBuilder(bodyMimeType))
                 .addStatement(REST_PROCESSOR_MULTIPART_METHOD_STATEMENT,
                         responseStrategy,
                         INTERCEPTOR_CHAIN_PROCESSOR_FIELD,
                         ACTION_MAPPER_FIELD,
                         resourceMethodName,
                         actionType.toString(),
-                        VALID_PARAMETER_COLLECTION_BUILDER_VARAIBLE)
+                        VALID_PARAMETER_COLLECTION_BUILDER_VARAIBLE,
+                        FILE_INPUT_DETAILS_FACTORY_FIELD,
+                        MULTIPART_INPUT,
+                        PART_DEFINITIONS_BUILDER_VARIABLE)
                 .build();
+    }
+
+    private CodeBlock putAllFileFormPartsInPartDefintionsBuilder(final MimeType bodyMimeType) {
+        final CodeBlock.Builder codeBlockBuilder = CodeBlock.builder();
+
+        final Map<String, List<FormParameter>> formParameters = bodyMimeType.getFormParameters();
+
+        formParameters.forEach((key, parameters) -> {
+            final int partIndex = parseInt(key);
+            final String displayName = parameters.get(0).getDisplayName();
+
+            codeBlockBuilder.addStatement("$L.add($L, $S)", PART_DEFINITIONS_BUILDER_VARIABLE, partIndex, displayName);
+        });
+
+
+        return codeBlockBuilder.build();
     }
 
     /**

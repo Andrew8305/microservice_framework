@@ -8,12 +8,14 @@ import static uk.gov.justice.services.messaging.logging.LoggerUtils.trace;
 
 import uk.gov.justice.services.adapter.rest.envelope.RestEnvelopeBuilderFactory;
 import uk.gov.justice.services.adapter.rest.mutipart.FileBasedInterceptorContextFactory;
+import uk.gov.justice.services.adapter.rest.mutipart.FileInputDetails;
 import uk.gov.justice.services.adapter.rest.parameter.Parameter;
-import uk.gov.justice.services.core.interceptor.InterceptorContext;
 import uk.gov.justice.services.adapter.rest.processor.response.ResponseStrategy;
+import uk.gov.justice.services.core.interceptor.InterceptorContext;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -23,7 +25,6 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
 import org.slf4j.Logger;
 
 @ApplicationScoped
@@ -64,10 +65,9 @@ public class DefaultRestProcessor implements RestProcessor {
                             final String action,
                             final HttpHeaders headers,
                             final Collection<Parameter> params,
-                            final MultipartInput multipartInput) {
+                            final List<FileInputDetails> fileInputDetails) {
 
-        return process(responseStrategy, interceptorChain, action, empty(), headers, params, Optional.of(multipartInput));
-
+        return process(responseStrategy, interceptorChain, action, empty(), headers, params, Optional.of(fileInputDetails));
     }
 
     private Response process(final ResponseStrategy responseStrategy,
@@ -76,7 +76,7 @@ public class DefaultRestProcessor implements RestProcessor {
                              final Optional<JsonObject> initialPayload,
                              final HttpHeaders headers,
                              final Collection<Parameter> params,
-                             final Optional<MultipartInput> multipartInput) {
+                             final Optional<List<FileInputDetails>> fileInputDetails) {
 
         trace(logger, () -> format("Processing REST message: %s", toHttpHeaderTrace(headers)));
 
@@ -89,7 +89,7 @@ public class DefaultRestProcessor implements RestProcessor {
 
         trace(logger, () -> format("REST message converted to envelope: %s", envelope));
 
-        final InterceptorContext interceptorContext = multipartInput
+        final InterceptorContext interceptorContext = fileInputDetails
                 .map(value -> fileBasedInterceptorContextFactory.create(value, envelope))
                 .orElseGet(() -> interceptorContextWithInput(envelope));
 

@@ -15,11 +15,17 @@ protocols: [ HTTP, HTTPS ]
           name: people.upload-photograph
       ...
     body:
-     multipart/form-data:
+        multipart/form-data:
+            formParameters:
+                0:
+                    description: Photograph of user
+                    type: file
+                    displayName: photoId
+                    required: true
     responses:
-      202:
-        description: Request accepted
-      400:
-        description: Bad Request
-      500:
-        description: Internal Server Error
+        202:
+            description: Request accepted
+        400:
+            description: Bad Request
+        500:
+            description: Internal Server Error
